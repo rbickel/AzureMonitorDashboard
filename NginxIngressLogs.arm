@@ -1,0 +1,402 @@
+{
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "workbookDisplayName": {
+      "type": "string",
+      "defaultValue": "Nginx Ingress logs",
+      "metadata": {
+        "description": "The friendly name for the workbook that is used in the Gallery or Saved List.  This name must be unique within a resource group."
+      }
+    },
+    "workbookType": {
+      "type": "string",
+      "defaultValue": "workbook",
+      "metadata": {
+        "description": "The gallery that the workbook will been shown under. Supported values include workbook, tsg, etc. Usually, this is 'workbook'"
+      }
+    },
+    "workbookSourceId": {
+      "type": "string",
+      "defaultValue": "Azure Monitor",
+      "metadata": {
+        "description": "The id of resource instance to which the workbook will be associated"
+      }
+    },
+    "workbookId": {
+      "type": "string",
+      "defaultValue": "[newGuid()]",
+      "metadata": {
+        "description": "The unique guid for this workbook instance"
+      }
+    }
+  },
+  "variables": {
+    "workbookContent": {
+      "version": "Notebook/1.0",
+      "items": [
+        {
+          "type": 9,
+          "content": {
+            "version": "KqlParameterItem/1.0",
+            "crossComponentResources": [
+              "value::all"
+            ],
+            "parameters": [
+              {
+                "id": "54f7d262-f5c2-46ec-9551-0917dd3f12fd",
+                "version": "KqlParameterItem/1.0",
+                "name": "workspace",
+                "type": 5,
+                "isRequired": true,
+                "multiSelect": true,
+                "quote": "'",
+                "delimiter": ",",
+                "query": "where type == \"microsoft.operationalinsights/workspaces\"\r\n| project id, name\r\n| order by name desc",
+                "crossComponentResources": [
+                  "value::all"
+                ],
+                "value": [
+                  "/subscriptions/6ff9e090-f045-45ba-adec-183d64c01b9b/resourceGroups/test/providers/Microsoft.OperationalInsights/workspaces/test"
+                ],
+                "typeSettings": {
+                  "additionalResourceOptions": []
+                },
+                "timeContext": {
+                  "durationMs": 86400000
+                },
+                "queryType": 1,
+                "resourceType": "microsoft.resourcegraph/resources",
+                "label": "Workspace"
+              },
+              {
+                "id": "4c5d5477-10ff-4166-a675-7058e4f42573",
+                "version": "KqlParameterItem/1.0",
+                "name": "timeRange",
+                "type": 4,
+                "value": {
+                  "durationMs": 86400000
+                },
+                "typeSettings": {
+                  "selectableValues": [
+                    {
+                      "durationMs": 300000
+                    },
+                    {
+                      "durationMs": 900000
+                    },
+                    {
+                      "durationMs": 1800000
+                    },
+                    {
+                      "durationMs": 3600000
+                    },
+                    {
+                      "durationMs": 14400000
+                    },
+                    {
+                      "durationMs": 43200000
+                    },
+                    {
+                      "durationMs": 86400000
+                    },
+                    {
+                      "durationMs": 172800000
+                    },
+                    {
+                      "durationMs": 259200000
+                    },
+                    {
+                      "durationMs": 604800000
+                    },
+                    {
+                      "durationMs": 1209600000
+                    },
+                    {
+                      "durationMs": 2419200000
+                    },
+                    {
+                      "durationMs": 2592000000
+                    },
+                    {
+                      "durationMs": 5184000000
+                    },
+                    {
+                      "durationMs": 7776000000
+                    }
+                  ],
+                  "allowCustom": true
+                },
+                "timeContext": {
+                  "durationMs": 86400000
+                },
+                "label": "Time"
+              }
+            ],
+            "style": "above",
+            "queryType": 1,
+            "resourceType": "microsoft.resourcegraph/resources"
+          },
+          "name": "parameters - 1"
+        },
+        {
+          "type": 3,
+          "content": {
+            "version": "KqlItem/1.0",
+            "query": "let log = ContainerLog \r\n| parse LogEntry with IP \" - - [\" Date '] \"' Verb \" \" Url \" \" Protocol '\"' StatusCode \" \" Milliseconds '\"-\" \"' Browser '\"' *\r\n| where IP != \"\"\r\n| extend statusCode_d = toint(StatusCode);\r\nlog \r\n| extend status = case(statusCode_d >= 200 and statusCode_d < 300, \"2xx\", statusCode_d >= 300 and statusCode_d < 400, \"3xx\", statusCode_d >= 400 and statusCode_d < 500, \"4xx\", \"5xx\")\r\n| summarize count() by status, bin(TimeGenerated, {timeRange:grain})\r\n| render areachart kind=stacked",
+            "size": 0,
+            "timeContext": {
+              "durationMs": 0
+            },
+            "timeContextFromParameter": "timeRange",
+            "queryType": 0,
+            "resourceType": "microsoft.operationalinsights/workspaces",
+            "crossComponentResources": [
+              "{workspace}"
+            ]
+          },
+          "customWidth": "50",
+          "name": "query - 1"
+        },
+        {
+          "type": 3,
+          "content": {
+            "version": "KqlItem/1.0",
+            "query": "let log = ContainerLog \r\n| parse LogEntry with IP \" - - [\" Date '] \"' Verb \" \" Url \" \" Protocol '\"' StatusCode \" \" Milliseconds '\"-\" \"' Browser '\"' *\r\n| where IP != \"\"\r\n| extend statusCode_d = toint(StatusCode);\r\nlog \r\n| extend status = case(statusCode_d >= 200 and statusCode_d < 300, \"2xx\", statusCode_d >= 300 and statusCode_d < 400, \"3xx\", statusCode_d >= 400 and statusCode_d < 500, \"4xx\", \"5xx\")\r\n| summarize count() by status\r\n| render piechart",
+            "size": 0,
+            "timeContext": {
+              "durationMs": 0
+            },
+            "timeContextFromParameter": "timeRange",
+            "queryType": 0,
+            "resourceType": "microsoft.operationalinsights/workspaces",
+            "crossComponentResources": [
+              "{workspace}"
+            ]
+          },
+          "customWidth": "50",
+          "name": "query - 2"
+        },
+        {
+          "type": 1,
+          "content": {
+            "json": "💡 Select a client IP in the table to see more details",
+            "style": "info"
+          },
+          "name": "text - 3"
+        },
+        {
+          "type": 3,
+          "content": {
+            "version": "KqlItem/1.0",
+            "query": "let log = ContainerLog \r\n| parse LogEntry with clientIP_s \" - - [\" Date '] \"' Verb \" \" Url \" \" Protocol '\"' StatusCode \" \" Milliseconds '\"-\" \"' Browser '\"' *\r\n| where clientIP_s != \"\"\r\n| extend httpStatus_d = toint(StatusCode);\r\nlog\r\n| extend status = case(httpStatus_d >= 200 and httpStatus_d < 300, \"2xx\", httpStatus_d >= 300 and httpStatus_d < 400, \"3xx\", httpStatus_d >= 400 and httpStatus_d < 500, \"4xx\", \"5xx\")\r\n| summarize Total=count(), 2xx=countif(status==\"2xx\"), 3xx=countif(status==\"3xx\"), 4xx=countif(status==\"4xx\"), 5xx=countif(status==\"5xx\")  by clientIP_s\r\n| join(\r\nlog\r\n| make-series count() on TimeGenerated from {timeRange:start} to {timeRange:end} step {timeRange:grain} by clientIP_s\r\n) on clientIP_s \r\n| order by Total desc | limit 250",
+            "size": 0,
+            "title": "Top 250 IPs",
+            "timeContext": {
+              "durationMs": 0
+            },
+            "timeContextFromParameter": "timeRange",
+            "exportParameterName": "Row",
+            "exportDefaultValue": "{}",
+            "queryType": 0,
+            "resourceType": "microsoft.operationalinsights/workspaces",
+            "crossComponentResources": [
+              "{workspace}"
+            ],
+            "gridSettings": {
+              "formatters": [
+                {
+                  "columnMatch": "Total",
+                  "formatter": 8,
+                  "formatOptions": {
+                    "palette": "red"
+                  }
+                },
+                {
+                  "columnMatch": "2xx",
+                  "formatter": 8,
+                  "formatOptions": {
+                    "palette": "blue"
+                  }
+                },
+                {
+                  "columnMatch": "3xx",
+                  "formatter": 8,
+                  "formatOptions": {
+                    "palette": "blue"
+                  }
+                },
+                {
+                  "columnMatch": "4xx",
+                  "formatter": 8,
+                  "formatOptions": {
+                    "palette": "blue"
+                  }
+                },
+                {
+                  "columnMatch": "5xx",
+                  "formatter": 8,
+                  "formatOptions": {
+                    "palette": "blue"
+                  }
+                },
+                {
+                  "columnMatch": "clientIP_s1",
+                  "formatter": 5
+                },
+                {
+                  "columnMatch": "count_",
+                  "formatter": 10,
+                  "formatOptions": {
+                    "palette": "blueOrange"
+                  }
+                },
+                {
+                  "columnMatch": "TimeGenerated",
+                  "formatter": 5
+                }
+              ]
+            }
+          },
+          "customWidth": "50",
+          "name": "query - 4"
+        },
+        {
+          "type": 3,
+          "content": {
+            "version": "KqlItem/1.0",
+            "query": "let row = dynamic({Row});\r\nlet log = ContainerLog \r\n| parse LogEntry with clientIP_s \" - - [\" Date '] \"' httpMethod_s \" \" requestUri_s \" \" Protocol '\"' StatusCode \" \" Milliseconds '\"-\" \"' Browser '\"' *\r\n| where clientIP_s != \"\"\r\n| extend httpStatus_d = toint(StatusCode);\r\nlog\r\n| extend Url = strcat(httpMethod_s, \" \", requestUri_s)\r\n| extend status = case(httpStatus_d >= 200 and httpStatus_d < 300, \"2xx\", httpStatus_d >= 300 and httpStatus_d < 400, \"3xx\", httpStatus_d >= 400 and httpStatus_d < 500, \"4xx\", \"5xx\")\r\n| where clientIP_s != \"127.0.0.1\"\r\n| where '{Row}' == '{}' or (row.clientIP_s == clientIP_s)\r\n| summarize Total=count(), 2xx=countif(status==\"2xx\"), 3xx=countif(status==\"3xx\"), 4xx=countif(status==\"4xx\"), 5xx=countif(status==\"5xx\") by Url\r\n| join(\r\nlog\r\n| extend Url = strcat(httpMethod_s, \" \", requestUri_s)\r\n| where clientIP_s != \"127.0.0.1\"\r\n| where '{Row}' == '{}' or (row.clientIP_s == clientIP_s)\r\n|  make-series count() on TimeGenerated from {timeRange:start} to {timeRange:end} step {timeRange:grain} by Url\r\n) on Url \r\n| order by Total desc | limit 250",
+            "size": 0,
+            "title": "Top 250 Urls",
+            "timeContext": {
+              "durationMs": 0
+            },
+            "timeContextFromParameter": "timeRange",
+            "exportParameterName": "Url",
+            "exportDefaultValue": "{}",
+            "queryType": 0,
+            "resourceType": "microsoft.operationalinsights/workspaces",
+            "crossComponentResources": [
+              "{workspace}"
+            ],
+            "gridSettings": {
+              "formatters": [
+                {
+                  "columnMatch": "Total",
+                  "formatter": 8,
+                  "formatOptions": {
+                    "palette": "red"
+                  }
+                },
+                {
+                  "columnMatch": "2xx",
+                  "formatter": 8,
+                  "formatOptions": {
+                    "palette": "blue"
+                  }
+                },
+                {
+                  "columnMatch": "3xx",
+                  "formatter": 8,
+                  "formatOptions": {
+                    "palette": "blue"
+                  }
+                },
+                {
+                  "columnMatch": "4xx",
+                  "formatter": 8,
+                  "formatOptions": {
+                    "palette": "blue"
+                  }
+                },
+                {
+                  "columnMatch": "5xx",
+                  "formatter": 8,
+                  "formatOptions": {
+                    "palette": "blue"
+                  }
+                },
+                {
+                  "columnMatch": "Url1",
+                  "formatter": 5
+                },
+                {
+                  "columnMatch": "count_",
+                  "formatter": 10,
+                  "formatOptions": {
+                    "palette": "blueOrange"
+                  }
+                },
+                {
+                  "columnMatch": "TimeGenerated",
+                  "formatter": 5
+                }
+              ]
+            }
+          },
+          "customWidth": "50",
+          "name": "query - 5"
+        },
+        {
+          "type": 1,
+          "content": {
+            "json": "💡 Select an Url above to see its timeline",
+            "style": "info"
+          },
+          "name": "text - 7"
+        },
+        {
+          "type": 3,
+          "content": {
+            "version": "KqlItem/1.0",
+            "query": "let url = dynamic({Url});\r\nlet log = ContainerLog \r\n| parse LogEntry with clientIP_s \" - - [\" Date '] \"' Verb \" \" Url \" \" Protocol '\"' StatusCode \" \" Milliseconds '\"-\" \"' Browser '\"' *\r\n| where clientIP_s != \"\"\r\n| extend httpStatus_d = toint(StatusCode);\r\nlog\r\n| where '{Url}' != '{}' or (url.Url == Url)\r\n| summarize count() by clientIP_s, bin(TimeGenerated, {timeRange:grain})\r\n| render timechart",
+            "size": 0,
+            "title": "Url calls over time",
+            "timeContext": {
+              "durationMs": 0
+            },
+            "timeContextFromParameter": "timeRange",
+            "queryType": 0,
+            "resourceType": "microsoft.operationalinsights/workspaces",
+            "crossComponentResources": [
+              "{workspace}"
+            ]
+          },
+          "conditionalVisibility": {
+            "parameterName": "Url",
+            "comparison": "isNotEqualTo",
+            "value": "{}"
+          },
+          "name": "query - 6"
+        }
+      ],
+      "isLocked": false,
+      "fallbackResourceIds": [
+        "Azure Monitor"
+      ]
+    }
+  },
+  "resources": [
+    {
+      "name": "[parameters('workbookId')]",
+      "type": "microsoft.insights/workbooks",
+      "location": "[resourceGroup().location]",
+      "apiVersion": "2021-03-08",
+      "dependsOn": [],
+      "kind": "shared",
+      "properties": {
+        "displayName": "[parameters('workbookDisplayName')]",
+        "serializedData": "[string(variables('workbookContent'))]",
+        "version": "1.0",
+        "sourceId": "[parameters('workbookSourceId')]",
+        "category": "[parameters('workbookType')]"
+      }
+    }
+  ],
+  "outputs": {
+    "workbookId": {
+      "type": "string",
+      "value": "[resourceId( 'microsoft.insights/workbooks', parameters('workbookId'))]"
+    }
+  },
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#"
+}
