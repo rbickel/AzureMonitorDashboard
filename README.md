@@ -1,6 +1,11 @@
 # AzureMonitorDashboard
 Dashboards for Azure Monitor
 
+## Generic AKS Workload
+
+Generic AKS workload behind an Application Gateway v2
+
+[![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Frbickel%2FAzureMonitorDashboard%2Fmain%2FGenericAKSWorkload.arm)
 
 ![image](https://user-images.githubusercontent.com/11852796/143069872-134c02a4-6fba-4d31-be7b-7ee301770e3f.png)
 

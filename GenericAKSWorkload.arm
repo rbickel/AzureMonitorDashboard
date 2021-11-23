@@ -186,7 +186,7 @@
                   "size": 0,
                   "title": "Application Gateway traffic",
                   "timeContext": {
-                    "durationMs": 0
+                    "durationMs": 14400000
                   },
                   "timeContextFromParameter": "timeRange",
                   "queryType": 0,
@@ -212,7 +212,7 @@
                   "size": 0,
                   "title": "Status codes",
                   "timeContext": {
-                    "durationMs": 0
+                    "durationMs": 14400000
                   },
                   "timeContextFromParameter": "timeRange",
                   "queryType": 0,
@@ -233,7 +233,8 @@
               {
                 "type": 1,
                 "content": {
-                  "json": "💡 Select a client IP in the table to see more details\r\n<br />"
+                  "json": "💡 Select a client IP in the table to see more details",
+                  "style": "info"
                 },
                 "name": "text - 7"
               },
@@ -241,13 +242,14 @@
                 "type": 3,
                 "content": {
                   "version": "KqlItem/1.0",
-                  "query": "AzureDiagnostics | where Category == \"ApplicationGatewayAccessLog\" \r\n| where clientIP_s != \"127.0.0.1\"\r\n| extend status = case(httpStatus_d >= 200 and httpStatus_d < 300, \"2xx\", httpStatus_d >= 300 and httpStatus_d < 400, \"3xx\", httpStatus_d >= 400 and httpStatus_d < 500, \"4xx\", \"5xx\")\r\n| summarize Total=count(), 2xx=countif(status==\"2xx\"), 3xx=countif(status==\"3xx\"), 4xx=countif(status==\"4xx\"), 5xx=countif(status==\"5xx\")  by clientIP_s\r\n| join(\r\nAzureDiagnostics | where Category == \"ApplicationGatewayAccessLog\"\r\n| where clientIP_s != \"127.0.0.1\"\r\n| make-series count() on TimeGenerated from {timeRange:start} to {timeRange:end} step {timeRange:grain} by clientIP_s\r\n) on clientIP_s \r\n| order by Total desc | limit 10",
+                  "query": "AzureDiagnostics | where Category == \"ApplicationGatewayAccessLog\" \r\n| where clientIP_s != \"127.0.0.1\"\r\n| extend status = case(httpStatus_d >= 200 and httpStatus_d < 300, \"2xx\", httpStatus_d >= 300 and httpStatus_d < 400, \"3xx\", httpStatus_d >= 400 and httpStatus_d < 500, \"4xx\", \"5xx\")\r\n| summarize Total=count(), 2xx=countif(status==\"2xx\"), 3xx=countif(status==\"3xx\"), 4xx=countif(status==\"4xx\"), 5xx=countif(status==\"5xx\")  by clientIP_s\r\n| join(\r\nAzureDiagnostics | where Category == \"ApplicationGatewayAccessLog\"\r\n| where clientIP_s != \"127.0.0.1\"\r\n| make-series count() on TimeGenerated from {timeRange:start} to {timeRange:end} step {timeRange:grain} by clientIP_s\r\n) on clientIP_s \r\n| order by Total desc | limit 250",
                   "size": 0,
-                  "title": "Top 10 clients",
+                  "title": "Top 250 clients",
                   "timeContext": {
                     "durationMs": 0
                   },
                   "timeContextFromParameter": "timeRange",
+                  "showRefreshButton": true,
                   "exportedParameters": [
                     {
                       "parameterType": 1
@@ -324,6 +326,7 @@
                         }
                       }
                     ],
+                    "filter": true,
                     "labelSettings": [
                       {
                         "columnId": "clientIP_s",
@@ -343,13 +346,14 @@
                 "type": 3,
                 "content": {
                   "version": "KqlItem/1.0",
-                  "query": "let row = dynamic({Row});\r\nAzureDiagnostics \r\n| where Category == \"ApplicationGatewayAccessLog\" \r\n| extend Url = strcat(httpMethod_s, \" \", requestUri_s)\r\n| extend status = case(httpStatus_d >= 200 and httpStatus_d < 300, \"2xx\", httpStatus_d >= 300 and httpStatus_d < 400, \"3xx\", httpStatus_d >= 400 and httpStatus_d < 500, \"4xx\", \"5xx\")\r\n| where clientIP_s != \"127.0.0.1\"\r\n| where '{Row}' == '{}' or (row.clientIP_s == clientIP_s)\r\n| summarize Total=count(), 2xx=countif(status==\"2xx\"), 3xx=countif(status==\"3xx\"), 4xx=countif(status==\"4xx\"), 5xx=countif(status==\"5xx\") by Url\r\n| join(\r\nAzureDiagnostics | where Category == \"ApplicationGatewayAccessLog\" | extend Url = strcat(httpMethod_s, \" \", requestUri_s)\r\n| where clientIP_s != \"127.0.0.1\"\r\n| where '{Row}' == '{}' or (row.clientIP_s == clientIP_s)\r\n|  make-series count() on TimeGenerated from {timeRange:start} to {timeRange:end} step {timeRange:grain} by Url\r\n) on Url \r\n| order by Total desc | limit 10",
+                  "query": "let row = dynamic({Row});\r\nAzureDiagnostics \r\n| where Category == \"ApplicationGatewayAccessLog\" \r\n| extend Url = strcat(httpMethod_s, \" \", requestUri_s)\r\n| extend status = case(httpStatus_d >= 200 and httpStatus_d < 300, \"2xx\", httpStatus_d >= 300 and httpStatus_d < 400, \"3xx\", httpStatus_d >= 400 and httpStatus_d < 500, \"4xx\", \"5xx\")\r\n| where clientIP_s != \"127.0.0.1\"\r\n| where '{Row}' == '{}' or (row.clientIP_s == clientIP_s)\r\n| summarize Total=count(), 2xx=countif(status==\"2xx\"), 3xx=countif(status==\"3xx\"), 4xx=countif(status==\"4xx\"), 5xx=countif(status==\"5xx\") by Url\r\n| join(\r\nAzureDiagnostics | where Category == \"ApplicationGatewayAccessLog\" | extend Url = strcat(httpMethod_s, \" \", requestUri_s)\r\n| where clientIP_s != \"127.0.0.1\"\r\n| where '{Row}' == '{}' or (row.clientIP_s == clientIP_s)\r\n|  make-series count() on TimeGenerated from {timeRange:start} to {timeRange:end} step {timeRange:grain} by Url\r\n) on Url \r\n| order by Total desc | limit 250",
                   "size": 0,
-                  "title": "Top 10 url",
+                  "title": "Top 250 url",
                   "timeContext": {
                     "durationMs": 0
                   },
                   "timeContextFromParameter": "timeRange",
+                  "showRefreshButton": true,
                   "queryType": 0,
                   "resourceType": "microsoft.operationalinsights/workspaces",
                   "crossComponentResources": [
@@ -415,6 +419,7 @@
                         }
                       }
                     ],
+                    "filter": true,
                     "labelSettings": [
                       {
                         "columnId": "count_",
@@ -524,7 +529,7 @@
             "query": "let start = {timeRange:start};\r\nlet end = {timeRange:end};\r\nlet grain = {timeRange:grain};\r\nlet data = materialize(\r\nInsightsMetrics\r\n| where Name == \"kube_deployment_status_replicas_ready\"\r\n| extend Tags = parse_json(Tags)\r\n| extend ClusterId = Tags[\"container.azm.ms/clusterId\"]\r\n| extend Deployment = tostring(Tags.deployment)\r\n| extend k8sNamespace = tostring(Tags.k8sNamespace)\r\n| extend Ready = Val/Tags.spec_replicas * 100, Updated = Val/Tags.status_replicas_updated * 100, Available = Val/Tags.status_replicas_available * 100\r\n| where \"{namespace}\" == \"'all'\" or \"{namespace}\" contains k8sNamespace\r\n| project k8sNamespace, Deployment, Ready, Updated, Available, TimeGenerated, Tags\r\n);\r\nlet data2 = data\r\n| extend Age = (now() - todatetime(Tags[\"creationTime\"]))/1m\r\n| summarize arg_max(TimeGenerated, *) by k8sNamespace, Deployment\r\n| project k8sNamespace, Deployment, Age, Ready, Updated, Available;\r\nlet ReadyData = data\r\n| make-series ReadyTrend = avg(Ready) default = 0 on TimeGenerated from start to end step grain by k8sNamespace, Deployment;\r\nlet UpdatedData = data\r\n| make-series UpdatedTrend = avg(Updated) default = 0 on TimeGenerated from start to end step grain by k8sNamespace, Deployment;\r\nlet AvailableData = data\r\n| make-series AvailableTrend = avg(Available) default = 0 on TimeGenerated from start to end step grain by k8sNamespace, Deployment;\r\ndata2\r\n| join kind = inner(ReadyData) on k8sNamespace, Deployment \r\n| join kind = inner(UpdatedData) on k8sNamespace, Deployment \r\n| join kind = inner(AvailableData) on k8sNamespace, Deployment\r\n| extend ReadyCase = case(Ready == 100, \"Healthy\", \"Warning\"),  UpdatedCase = case(Updated == 100, \"Healthy\", \"Warning\"),  AvailableCase = case(Available == 100, \"Healthy\", \"Warning\")\r\n| extend Overall = case(ReadyCase == \"Healthy\" and UpdatedCase == \"Healthy\" and AvailableCase == \"Healthy\", \"Healthy\", \"Warning\")\r\n| project Deployment, Namespace = k8sNamespace, Age, Ready, ReadyTrend, Updated, UpdatedTrend, Available,AvailableTrend\r\n| sort by Ready asc\r\n",
             "size": 0,
             "timeContext": {
-              "durationMs": 0
+              "durationMs": 14400000
             },
             "timeContextFromParameter": "timeRange",
             "queryType": 0,
