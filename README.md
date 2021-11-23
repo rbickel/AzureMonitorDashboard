@@ -8,6 +8,11 @@ Generic workbook for Nginx Ingress controller log analysis
 
 [![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Frbickel%2FAzureMonitorDashboard%2Fmain%2FNginxIngressLogs.arm)
 
+![image](https://user-images.githubusercontent.com/11852796/143095089-78d4652a-69a6-45ce-996f-554d6a42b34f.png)
+
+![image](https://user-images.githubusercontent.com/11852796/143095142-5135a792-853c-4d85-90e8-5071d06915af.png)
+
+![image](https://user-images.githubusercontent.com/11852796/143095203-eb83de6a-d924-40b7-8ded-e8c338371adf.png)
 
 ## Generic AKS Workload
 
