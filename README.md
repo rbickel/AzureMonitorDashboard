@@ -1,6 +1,14 @@
 # AzureMonitorDashboard
 Dashboards for Azure Monitor
 
+## Generic Nginx Ingress dashboard
+
+
+Generic workbook for Nginx Ingress controller log analysis
+
+[![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Frbickel%2FAzureMonitorDashboard%2Fmain%2FNginxIngressLogs.arm)
+
+
 ## Generic AKS Workload
 
 Generic AKS workload behind an Application Gateway v2
