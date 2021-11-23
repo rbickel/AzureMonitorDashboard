@@ -17,7 +17,7 @@
     },
     "workbookSourceId": {
       "type": "string",
-      "defaultValue": "azure monitor",
+      "defaultValue": "Azure Monitor",
       "metadata": {
         "description": "The id of resource instance to which the workbook will be associated"
       }
@@ -38,9 +38,6 @@
           "type": 9,
           "content": {
             "version": "KqlParameterItem/1.0",
-            "crossComponentResources": [
-              "value::all"
-            ],
             "parameters": [
               {
                 "id": "54f7d262-f5c2-46ec-9551-0917dd3f12fd",
@@ -74,7 +71,7 @@
                 "name": "timeRange",
                 "type": 4,
                 "value": {
-                  "durationMs": 172800000
+                  "durationMs": 14400000
                 },
                 "typeSettings": {
                   "selectableValues": [
@@ -130,11 +127,28 @@
                   "durationMs": 86400000
                 },
                 "label": "Time"
+              },
+              {
+                "id": "1d0a0423-f96c-43f0-863b-7c1e8b61fe56",
+                "version": "KqlParameterItem/1.0",
+                "name": "nginxLogQuery",
+                "type": 1,
+                "description": "Used as the default nginx parsing query",
+                "isHiddenWhenLocked": true,
+                "criteriaData": [
+                  {
+                    "criteriaContext": {
+                      "operator": "Default",
+                      "resultValType": "static",
+                      "resultVal": "ContainerLog  | parse LogEntry with IP \" - - [\" Date '] \"' Verb \" \" Url \" \" Protocol '\"' StatusCode \" \" Milliseconds '\"-\" \"' Browser '\"' * | where IP != \"\" | extend statusCode_d = toint(StatusCode)| extend status = case(statusCode_d >= 200 and statusCode_d < 300, \"2xx\", statusCode_d >= 300 and statusCode_d < 400, \"3xx\", statusCode_d >= 400 and statusCode_d < 500, \"4xx\", \"5xx\");"
+                    }
+                  }
+                ]
               }
             ],
             "style": "above",
-            "queryType": 1,
-            "resourceType": "microsoft.resourcegraph/resources"
+            "queryType": 0,
+            "resourceType": "microsoft.operationalinsights/workspaces"
           },
           "name": "parameters - 1"
         },
@@ -142,10 +156,10 @@
           "type": 3,
           "content": {
             "version": "KqlItem/1.0",
-            "query": "let log = ContainerLog \r\n| parse LogEntry with IP \" - - [\" Date '] \"' Verb \" \" Url \" \" Protocol '\"' StatusCode \" \" Milliseconds '\"-\" \"' Browser '\"' *\r\n| where IP != \"\"\r\n| extend statusCode_d = toint(StatusCode);\r\nlog \r\n| extend status = case(statusCode_d >= 200 and statusCode_d < 300, \"2xx\", statusCode_d >= 300 and statusCode_d < 400, \"3xx\", statusCode_d >= 400 and statusCode_d < 500, \"4xx\", \"5xx\")\r\n| summarize count() by status, bin(TimeGenerated, {timeRange:grain})\r\n| render areachart kind=stacked",
+            "query": "let log = {nginxLogQuery}\r\nlog \r\n| summarize count() by status, bin(TimeGenerated, {timeRange:grain})\r\n| render areachart kind=stacked",
             "size": 0,
             "timeContext": {
-              "durationMs": 86400000
+              "durationMs": 0
             },
             "timeContextFromParameter": "timeRange",
             "queryType": 0,
@@ -161,10 +175,10 @@
           "type": 3,
           "content": {
             "version": "KqlItem/1.0",
-            "query": "let log = ContainerLog \r\n| parse LogEntry with IP \" - - [\" Date '] \"' Verb \" \" Url \" \" Protocol '\"' StatusCode \" \" Milliseconds '\"-\" \"' Browser '\"' *\r\n| where IP != \"\"\r\n| extend statusCode_d = toint(StatusCode);\r\nlog \r\n| extend status = case(statusCode_d >= 200 and statusCode_d < 300, \"2xx\", statusCode_d >= 300 and statusCode_d < 400, \"3xx\", statusCode_d >= 400 and statusCode_d < 500, \"4xx\", \"5xx\")\r\n| summarize count() by status\r\n| render piechart",
+            "query": "let log = {nginxLogQuery}\r\nlog \r\n| summarize count() by status\r\n| render piechart",
             "size": 0,
             "timeContext": {
-              "durationMs": 86400000
+              "durationMs": 0
             },
             "timeContextFromParameter": "timeRange",
             "queryType": 0,
@@ -188,7 +202,7 @@
           "type": 3,
           "content": {
             "version": "KqlItem/1.0",
-            "query": "let log = ContainerLog \r\n| parse LogEntry with clientIP_s \" - - [\" Date '] \"' Verb \" \" Url \" \" Protocol '\"' StatusCode \" \" Milliseconds '\"-\" \"' Browser '\"' *\r\n| where clientIP_s != \"\"\r\n| extend httpStatus_d = toint(StatusCode);\r\nlog\r\n| extend status = case(httpStatus_d >= 200 and httpStatus_d < 300, \"2xx\", httpStatus_d >= 300 and httpStatus_d < 400, \"3xx\", httpStatus_d >= 400 and httpStatus_d < 500, \"4xx\", \"5xx\")\r\n| summarize Total=count(), 2xx=countif(status==\"2xx\"), 3xx=countif(status==\"3xx\"), 4xx=countif(status==\"4xx\"), 5xx=countif(status==\"5xx\")  by clientIP_s\r\n| join(\r\nlog\r\n| make-series count() on TimeGenerated from {timeRange:start} to {timeRange:end} step {timeRange:grain} by clientIP_s\r\n) on clientIP_s \r\n| order by Total desc | limit 250",
+            "query": "let log = {nginxLogQuery}\r\nlog\r\n| summarize Total=count(), 2xx=countif(status==\"2xx\"), 3xx=countif(status==\"3xx\"), 4xx=countif(status==\"4xx\"), 5xx=countif(status==\"5xx\")  by IP\r\n| join(\r\nlog\r\n| make-series count() on TimeGenerated from {timeRange:start} to {timeRange:end} step {timeRange:grain} by IP\r\n) on IP \r\n| order by Total desc | limit 250",
             "size": 0,
             "title": "Top 250 IPs",
             "timeContext": {
@@ -240,7 +254,7 @@
                   }
                 },
                 {
-                  "columnMatch": "clientIP_s1",
+                  "columnMatch": "IP1",
                   "formatter": 5
                 },
                 {
@@ -253,9 +267,19 @@
                 {
                   "columnMatch": "TimeGenerated",
                   "formatter": 5
+                },
+                {
+                  "columnMatch": "clientIP_s1",
+                  "formatter": 5
                 }
               ],
-              "filter": true
+              "filter": true,
+              "labelSettings": [
+                {
+                  "columnId": "count_",
+                  "label": "Timeline"
+                }
+              ]
             }
           },
           "customWidth": "50",
@@ -265,7 +289,7 @@
           "type": 3,
           "content": {
             "version": "KqlItem/1.0",
-            "query": "let row = dynamic({Row});\r\nlet log = ContainerLog \r\n| parse LogEntry with clientIP_s \" - - [\" Date '] \"' httpMethod_s \" \" requestUri_s \" \" Protocol '\"' StatusCode \" \" Milliseconds '\"-\" \"' Browser '\"' *\r\n| where clientIP_s != \"\"\r\n| extend httpStatus_d = toint(StatusCode);\r\nlog\r\n| extend Url = strcat(httpMethod_s, \" \", requestUri_s)\r\n| extend status = case(httpStatus_d >= 200 and httpStatus_d < 300, \"2xx\", httpStatus_d >= 300 and httpStatus_d < 400, \"3xx\", httpStatus_d >= 400 and httpStatus_d < 500, \"4xx\", \"5xx\")\r\n| where clientIP_s != \"127.0.0.1\"\r\n| where '{Row}' == '{}' or (row.clientIP_s == clientIP_s)\r\n| summarize Total=count(), 2xx=countif(status==\"2xx\"), 3xx=countif(status==\"3xx\"), 4xx=countif(status==\"4xx\"), 5xx=countif(status==\"5xx\") by Url, requestUri_s\r\n| join(\r\nlog\r\n| extend Url = strcat(httpMethod_s, \" \", requestUri_s)\r\n| where clientIP_s != \"127.0.0.1\"\r\n| where '{Row}' == '{}' or (row.clientIP_s == clientIP_s)\r\n|  make-series count() on TimeGenerated from {timeRange:start} to {timeRange:end} step {timeRange:grain} by Url\r\n) on Url \r\n| order by Total desc | limit 250",
+            "query": "let row = dynamic({Row});\r\nlet log = {nginxLogQuery}\r\nlog\r\n| extend Url2 = strcat(Verb, \" \", Url)\r\n| where '{Row}' == '{}' or (row.IP == IP)\r\n| summarize Total=count(), 2xx=countif(status==\"2xx\"), 3xx=countif(status==\"3xx\"), 4xx=countif(status==\"4xx\"), 5xx=countif(status==\"5xx\") by Url2, Url\r\n| join(\r\nlog\r\n| extend Url2 = strcat(Verb, \" \", Url)\r\n| where '{Row}' == '{}' or (row.IP == IP)\r\n|  make-series count() on TimeGenerated from {timeRange:start} to {timeRange:end} step {timeRange:grain} by Url2\r\n) on Url2\r\n| order by Total desc | limit 250",
             "size": 0,
             "title": "Top 250 Urls",
             "timeContext": {
@@ -282,7 +306,7 @@
             "gridSettings": {
               "formatters": [
                 {
-                  "columnMatch": "requestUri_s",
+                  "columnMatch": "Url",
                   "formatter": 5
                 },
                 {
@@ -321,7 +345,7 @@
                   }
                 },
                 {
-                  "columnMatch": "Url1",
+                  "columnMatch": "Url21",
                   "formatter": 5
                 },
                 {
@@ -334,9 +358,27 @@
                 {
                   "columnMatch": "TimeGenerated",
                   "formatter": 5
+                },
+                {
+                  "columnMatch": "requestUri_s",
+                  "formatter": 5
+                },
+                {
+                  "columnMatch": "Url1",
+                  "formatter": 5
                 }
               ],
-              "filter": true
+              "filter": true,
+              "labelSettings": [
+                {
+                  "columnId": "Url2",
+                  "label": "Url"
+                },
+                {
+                  "columnId": "count_",
+                  "label": "Timeline"
+                }
+              ]
             }
           },
           "customWidth": "50",
@@ -354,7 +396,7 @@
           "type": 3,
           "content": {
             "version": "KqlItem/1.0",
-            "query": "let url = dynamic({Url});\r\nlet log = ContainerLog \r\n| parse LogEntry with clientIP_s \" - - [\" Date '] \"' Verb \" \" requestUri_s \" \" Protocol '\"' StatusCode \" \" Milliseconds '\"-\" \"' Browser '\"' *\r\n| where clientIP_s != \"\"\r\n| extend httpStatus_d = toint(StatusCode);\r\nlog\r\n| where '{Url}' != '{}' and (url.requestUri_s == requestUri_s)\r\n| summarize count() by clientIP_s, bin(TimeGenerated, {timeRange:grain})\r\n| render timechart",
+            "query": "let url = dynamic({Url});\r\nlet log = {nginxLogQuery}\r\nlog\r\n| where '{Url}' != '{}' and (url.Url == Url)\r\n| summarize count() by IP, bin(TimeGenerated, {timeRange:grain})\r\n| render timechart",
             "size": 0,
             "title": "Url calls over time",
             "timeContext": {
@@ -377,7 +419,7 @@
       ],
       "isLocked": false,
       "fallbackResourceIds": [
-        "azure monitor"
+        "Azure Monitor"
       ]
     }
   },
@@ -404,5 +446,5 @@
       "value": "[resourceId( 'microsoft.insights/workbooks', parameters('workbookId'))]"
     }
   },
-  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#"
+  "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#"
 }
