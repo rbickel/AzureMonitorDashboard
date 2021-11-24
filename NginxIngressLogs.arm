@@ -71,7 +71,7 @@
                 "name": "timeRange",
                 "type": 4,
                 "value": {
-                  "durationMs": 14400000
+                  "durationMs": 86400000
                 },
                 "typeSettings": {
                   "selectableValues": [
@@ -129,21 +129,69 @@
                 "label": "Time"
               },
               {
+                "id": "ac42c6ef-5f32-4bf0-8668-80c03fef5c9d",
+                "version": "KqlParameterItem/1.0",
+                "name": "namespace",
+                "type": 2,
+                "description": "Filter container logs by namespace",
+                "isRequired": true,
+                "multiSelect": true,
+                "quote": "'",
+                "delimiter": ",",
+                "query": "KubePodInventory | summarize by Namespace | order by Namespace asc",
+                "crossComponentResources": [
+                  "{workspace}"
+                ],
+                "value": [
+                  "ingress"
+                ],
+                "typeSettings": {
+                  "additionalResourceOptions": [
+                    "value::all"
+                  ],
+                  "selectAllValue": "all",
+                  "showDefault": false
+                },
+                "timeContext": {
+                  "durationMs": 0
+                },
+                "timeContextFromParameter": "timeRange",
+                "defaultValue": "value::all",
+                "queryType": 0,
+                "resourceType": "microsoft.operationalinsights/workspaces",
+                "label": "Namespace"
+              },
+              {
                 "id": "1d0a0423-f96c-43f0-863b-7c1e8b61fe56",
                 "version": "KqlParameterItem/1.0",
                 "name": "nginxLogQuery",
                 "type": 1,
                 "description": "Used as the default nginx parsing query",
+                "isGlobal": true,
                 "isHiddenWhenLocked": true,
                 "criteriaData": [
                   {
                     "criteriaContext": {
+                      "leftOperand": "namespace",
+                      "operator": "==",
+                      "rightValType": "static",
+                      "rightVal": "'all'",
+                      "resultValType": "static",
+                      "resultVal": "KubePodInventory  | where \"{namespace}\" == \"'all'\" or \"{namespace}\" contains Namespace  | summarize by ContainerID, Namespace | join kind=inner (     ContainerLog       | parse LogEntry with IP \" - - [\" Date '] \"' Verb \" \" Url \" \" Protocol '\"' StatusCode \" \" Milliseconds '\"' Hostname '\" \"' Browser '\"' *      | where IP != \"\"      | extend statusCode_d = toint(StatusCode)     | extend status = case(statusCode_d >= 200 and statusCode_d < 300, \"2xx\", statusCode_d >= 300 and statusCode_d < 400, \"3xx\", statusCode_d >= 400 and statusCode_d < 500, \"4xx\", \"5xx\"))     on ContainerID;"
+                    }
+                  },
+                  {
+                    "criteriaContext": {
                       "operator": "Default",
                       "resultValType": "static",
-                      "resultVal": "ContainerLog  | parse LogEntry with IP \" - - [\" Date '] \"' Verb \" \" Url \" \" Protocol '\"' StatusCode \" \" Milliseconds '\"-\" \"' Browser '\"' * | where IP != \"\" | extend statusCode_d = toint(StatusCode)| extend status = case(statusCode_d >= 200 and statusCode_d < 300, \"2xx\", statusCode_d >= 300 and statusCode_d < 400, \"3xx\", statusCode_d >= 400 and statusCode_d < 500, \"4xx\", \"5xx\");"
+                      "resultVal": "KubePodInventory  | where \"{namespace}\" == \"'all'\" or \"{namespace}\" contains Namespace  | summarize by ContainerID, Namespace | join kind=inner (     ContainerLog       | parse LogEntry with IP \" - - [\" Date '] \"' Verb \" \" Url \" \" Protocol '\"' StatusCode \" \" Milliseconds '\"' Hostname '\" \"' Browser '\"' *      | where IP != \"\"      | extend statusCode_d = toint(StatusCode)     | extend status = case(statusCode_d >= 200 and statusCode_d < 300, \"2xx\", statusCode_d >= 300 and statusCode_d < 400, \"3xx\", statusCode_d >= 400 and statusCode_d < 500, \"4xx\", \"5xx\"))     on ContainerID;"
                     }
                   }
-                ]
+                ],
+                "timeContext": {
+                  "durationMs": 14400000
+                },
+                "timeContextFromParameter": "timeRange"
               }
             ],
             "style": "above",
@@ -159,7 +207,7 @@
             "query": "let log = {nginxLogQuery}\r\nlog \r\n| summarize count() by status, bin(TimeGenerated, {timeRange:grain})\r\n| render areachart kind=stacked",
             "size": 0,
             "timeContext": {
-              "durationMs": 0
+              "durationMs": 14400000
             },
             "timeContextFromParameter": "timeRange",
             "queryType": 0,
@@ -178,7 +226,7 @@
             "query": "let log = {nginxLogQuery}\r\nlog \r\n| summarize count() by status\r\n| render piechart",
             "size": 0,
             "timeContext": {
-              "durationMs": 0
+              "durationMs": 14400000
             },
             "timeContextFromParameter": "timeRange",
             "queryType": 0,
@@ -206,7 +254,7 @@
             "size": 0,
             "title": "Top 250 IPs",
             "timeContext": {
-              "durationMs": 0
+              "durationMs": 14400000
             },
             "timeContextFromParameter": "timeRange",
             "exportParameterName": "Row",
@@ -400,7 +448,7 @@
             "size": 0,
             "title": "Url calls over time",
             "timeContext": {
-              "durationMs": 0
+              "durationMs": 14400000
             },
             "timeContextFromParameter": "timeRange",
             "queryType": 0,
@@ -446,5 +494,5 @@
       "value": "[resourceId( 'microsoft.insights/workbooks', parameters('workbookId'))]"
     }
   },
-  "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#"
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#"
 }
