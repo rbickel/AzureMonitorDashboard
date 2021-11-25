@@ -207,7 +207,7 @@
             "query": "let log = {nginxLogQuery}\r\nlog \r\n| summarize count() by status, bin(TimeGenerated, {timeRange:grain})\r\n| render areachart kind=stacked",
             "size": 0,
             "timeContext": {
-              "durationMs": 14400000
+              "durationMs": 86400000
             },
             "timeContextFromParameter": "timeRange",
             "queryType": 0,
@@ -226,7 +226,7 @@
             "query": "let log = {nginxLogQuery}\r\nlog \r\n| summarize count() by status\r\n| render piechart",
             "size": 0,
             "timeContext": {
-              "durationMs": 14400000
+              "durationMs": 86400000
             },
             "timeContextFromParameter": "timeRange",
             "queryType": 0,
@@ -254,7 +254,7 @@
             "size": 0,
             "title": "Top 250 IPs",
             "timeContext": {
-              "durationMs": 14400000
+              "durationMs": 86400000
             },
             "timeContextFromParameter": "timeRange",
             "exportParameterName": "Row",
@@ -337,11 +337,11 @@
           "type": 3,
           "content": {
             "version": "KqlItem/1.0",
-            "query": "let row = dynamic({Row});\r\nlet log = {nginxLogQuery}\r\nlog\r\n| extend Url2 = strcat(Verb, \" \", Url)\r\n| where '{Row}' == '{}' or (row.IP == IP)\r\n| summarize Total=count(), 2xx=countif(status==\"2xx\"), 3xx=countif(status==\"3xx\"), 4xx=countif(status==\"4xx\"), 5xx=countif(status==\"5xx\") by Url2, Url\r\n| join(\r\nlog\r\n| extend Url2 = strcat(Verb, \" \", Url)\r\n| where '{Row}' == '{}' or (row.IP == IP)\r\n|  make-series count() on TimeGenerated from {timeRange:start} to {timeRange:end} step {timeRange:grain} by Url2\r\n) on Url2\r\n| order by Total desc | limit 250",
+            "query": "let row = dynamic({Row});\r\nlet log = {nginxLogQuery}\r\nlog\r\n| extend Uri = strcat(Verb, \" \", Url)\r\n| where '{Row}' == '{}' or (row.IP == IP)\r\n| summarize Total=count(), 2xx=countif(status==\"2xx\"), 3xx=countif(status==\"3xx\"), 4xx=countif(status==\"4xx\"), 5xx=countif(status==\"5xx\") by Uri, Url\r\n| join(\r\nlog\r\n| extend Uri = strcat(Verb, \" \", Url)\r\n| where '{Row}' == '{}' or (row.IP == IP)\r\n|  make-series count() on TimeGenerated from {timeRange:start} to {timeRange:end} step {timeRange:grain} by Uri\r\n) on Uri\r\n| order by Total desc | limit 250",
             "size": 0,
             "title": "Top 250 Urls",
             "timeContext": {
-              "durationMs": 0
+              "durationMs": 86400000
             },
             "timeContextFromParameter": "timeRange",
             "exportParameterName": "Url",
@@ -393,7 +393,7 @@
                   }
                 },
                 {
-                  "columnMatch": "Url21",
+                  "columnMatch": "Uri1",
                   "formatter": 5
                 },
                 {
@@ -408,6 +408,10 @@
                   "formatter": 5
                 },
                 {
+                  "columnMatch": "Url21",
+                  "formatter": 5
+                },
+                {
                   "columnMatch": "requestUri_s",
                   "formatter": 5
                 },
@@ -418,10 +422,6 @@
               ],
               "filter": true,
               "labelSettings": [
-                {
-                  "columnId": "Url2",
-                  "label": "Url"
-                },
                 {
                   "columnId": "count_",
                   "label": "Timeline"
@@ -448,7 +448,7 @@
             "size": 0,
             "title": "Url calls over time",
             "timeContext": {
-              "durationMs": 14400000
+              "durationMs": 86400000
             },
             "timeContextFromParameter": "timeRange",
             "queryType": 0,
